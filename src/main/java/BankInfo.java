@@ -358,7 +358,7 @@ public class BankInfo
         do
         {
             password = validateString("Please enter your password.\n1: Password must contain a number 0-9\n2: Lower and Uppercase letters\n3: A Special Character: @$!%*#?& and be at least 8 characters in length.", 8, 20);
-        }while(!validPassword(password));
+        } while (!validPassword(password));
 
         switch (validateString(String.format("Please confirm the following info:\nFirst Name:\t%s\nLast Name:\t%s\nUsername:\t%s\nPassword:\t%s\nConfirm? Y for Yes, N for No and anything else to quit", firstName, lastName, username, password), 1, 10).trim().toLowerCase(Locale.ROOT).charAt(0))
         {

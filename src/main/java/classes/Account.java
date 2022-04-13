@@ -46,7 +46,7 @@ public class Account
     @Override
     public String toString()
     {
-        return String.format("%10s\t|\t%10s\t|\t%.2f", this.accountName,this.accountType, this.balance);
+        return String.format("%10s\t|\t%10s\t|\t$%.2f", this.accountName,this.accountType, this.balance);
     }
 
     public String verbalString()
