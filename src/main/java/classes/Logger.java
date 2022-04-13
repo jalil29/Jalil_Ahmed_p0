@@ -7,6 +7,8 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.Random;
 
+///Contains Specific log methods tied to a particular LogLevel
+///Also contains an optional log option that allows you to specify the log level
 public class Logger
 {
     public static void logMessage(String output)
@@ -34,6 +36,8 @@ public class Logger
         log(LogLevel.fatal, output);
     }
 
+    ///Core of the Logger class
+    ///publicly accessible for when loglevel is variable
     public static void log(LogLevel logLevel, String output)
     {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS");

@@ -6,7 +6,8 @@ import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 
-
+//Back-End class
+//DAO
 public class Connections
 {
     private Connection conn;
@@ -16,21 +17,22 @@ public class Connections
 
     }
 
+    ///Connect to service, return if connection succeeded
     public boolean connect(String server, String database, String username, String password)
     {
         try
         {
-            //conn = DriverManager.getConnection("jdbc:postgresql://razgriz-db.c7cl5ukvaqrg.us-east-2.rds.amazonaws.com/sterlingbank?user=postgres&password=u3UnU6Vc0hn0zmgLpI");
-            conn = DriverManager.getConnection(String.format( "%s/%s?user=%s&password=%s",server,database,username,password));
+            conn = DriverManager.getConnection(String.format("%s/%s?user=%s&password=%s", server, database, username, password));
+            return true;
         }
         catch (SQLException e)
         {
             System.err.println("Failed to connect to server " + e);
-            return false;
         }
-        return true;
+        return false;
     }
 
+    ///Check if username is available to be used
     public boolean validUsername(String username)
     {
         try
@@ -42,13 +44,14 @@ public class Connections
         }
         catch (Exception e)
         {
-            System.err.println("An Error has occurred");
+            System.err.println("An Error has occurred " + e);
             e.printStackTrace();
         }
         return false;
-
     }
 
+    ///Create new user based on User Class data
+    ///returns if user was created
     public boolean createNewUser(User user)
     {
         try
@@ -66,6 +69,8 @@ public class Connections
         return false;
     }
 
+    //Attempt to login with username and password
+    //returns a User class if login was successful or null if not;
     public User login(String username, String passcode)
     {
         try
@@ -92,6 +97,7 @@ public class Connections
         return null;
     }
 
+    ///Returns all Accounts associated with user
     public Account[] getAccounts(User user)
     {
         Account[] accounts = null;
@@ -121,6 +127,7 @@ public class Connections
         return accounts;
     }
 
+    ///returns all Users associated with account 
     public User[] getAccountUsers(Account account)
     {
         User[] users = null;
@@ -147,6 +154,7 @@ public class Connections
         return users;
     }
 
+    ///Test only: Tests to see if key exists in database
     public boolean validateUniqueAccount(String identify)
     {
         ResultSet results = getAccountResultSet(identify);
@@ -162,6 +170,7 @@ public class Connections
         return false;
     }
 
+    ///create new account based on user input and returns an Account Object if successful
     public Account openNewAccount(String accountName, int accountType, String accountTypeName, User user)
     {
         try
@@ -196,6 +205,8 @@ public class Connections
         return null;
     }
 
+    ///Adds association to database between a new user and account
+    ///used for joint accounts
     public boolean associateAccount(Account account, User newUser)
     {
         try
@@ -204,16 +215,17 @@ public class Connections
             statement.setString(1, newUser.getUsername());
             statement.setString(2, account.getAccountIdentifier());
             statement.execute();
-            Logger.logDebug(String.format("Associated Account %s with User %s",account.getAccountName(),newUser.getUsername()));
-            return  true;
+            Logger.logDebug(String.format("Associated Account %s with User %s", account.getAccountName(), newUser.getUsername()));
+            return true;
         }
         catch (Exception e)
         {
-            Logger.logError(String.format("Failed to associate Account %s with User %s %s",account.getAccountName(),newUser.getUsername(),e));
+            Logger.logError(String.format("Failed to associate Account %s with User %s %s", account.getAccountName(), newUser.getUsername(), e));
         }
-        return  false;
+        return false;
     }
 
+    ///Test only: delete account from database related to account
     public void deleteAccount(Account account)
     {
         try
@@ -237,11 +249,13 @@ public class Connections
         }
     }
 
+    ///returns ResultSet associated with account from account database
     private ResultSet getAccountResultSet(String identify)
     {
         try
         {
-            PreparedStatement statement = conn.prepareStatement(String.format("select * from accountDatabase where accountIdentifier = '%s'", identify));
+            PreparedStatement statement = conn.prepareStatement("select * from accountDatabase where accountIdentifier = ?");
+            statement.setString(1, identify);
             return statement.executeQuery();
         }
         catch (Exception e)
@@ -252,6 +266,8 @@ public class Connections
         return null;
     }
 
+    ///Updates Account balance with value
+    ///Calls to create a transaction record
     public void updateTransaction(Account account, double value)
     {
         try
@@ -270,6 +286,7 @@ public class Connections
         }
     }
 
+    ///prints Transaction history associated with an account
     public void getTransactionHistory(Account account)
     {
         try
@@ -281,7 +298,7 @@ public class Connections
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
             GregorianCalendar calendar = new GregorianCalendar();
-            StringBuilder sep= new StringBuilder();
+            StringBuilder sep = new StringBuilder();
             for (int j = 0; j < 5; j++)
             {
                 sep.append("**********");
@@ -303,6 +320,8 @@ public class Connections
         }
     }
 
+    ///get available account types
+    ///I.E: Checking, Saving, Eta
     public String[] getAccountTypes()
     {
         String[] accounts = null;
@@ -329,6 +348,7 @@ public class Connections
 
     }
 
+    ///Logs transaction into the database.
     private void createTransactionLog(String identity, double value)
     {
         try

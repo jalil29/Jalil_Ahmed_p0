@@ -41,7 +41,7 @@ public class SterlingTest
     @Order(0)
     public void connectionTest()
     {
-        Assertions.assertTrue(connectionTest.connect("jdbc:postgresql://localhost","postgres","postgres","dumbpassword"));
+        Assertions.assertTrue(connectionTest.connect("jdbc:postgresql://localhost", "postgres", "postgres", "dumbpassword"));
     }
 
     @Test
@@ -65,21 +65,20 @@ public class SterlingTest
             if (account.getAccountIdentifier().compareTo(sacAccount.getAccountIdentifier()) == 0)
             {
                 check = true;
-                sacAccount=account;
+                sacAccount = account;
             }
         }
         Assertions.assertTrue(check);
-        Random rand= new Random();
+        Random rand = new Random();
 
-        for (int i = 0, n = 5000; i < n ; i++)
+        for (int i = 0, n = 100; i < n; i++)
         {
-            int deposit=rand.nextInt(10000);
+            int deposit = rand.nextInt(10000);
             connectionTest.updateTransaction(sacAccount, deposit);
-            sacAccount.sumBalance(deposit);
-
-            double withdraw=  Math.floor(-rand.nextDouble()*sacAccount.getBalance()*100)/100;
+            System.out.println(String.format("%s account\n\t%s\nBalance $%,.2f\n", sacAccount.getAccountName(), sacAccount.getAccountType(), /*sacAccount.getBalance() < 0 ? '-' : '+',*/ sacAccount.getBalance()));
+            double withdraw = Math.floor(-rand.nextDouble() * sacAccount.getBalance() * 100) / 100;
             connectionTest.updateTransaction(sacAccount, withdraw);
-            sacAccount.sumBalance(withdraw);
+            System.out.println(String.format("%s account\n\t%s\nBalance $%,.2f\n", sacAccount.getAccountName(), sacAccount.getAccountType(), /*sacAccount.getBalance() < 0 ? '-' : '+',*/ sacAccount.getBalance()));
         }
         connectionTest.getTransactionHistory(sacAccount);
 

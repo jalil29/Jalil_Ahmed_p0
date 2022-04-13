@@ -7,6 +7,7 @@ import java.util.Locale;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
+//Front-End Class
 public class BankInfo
 {
     Scanner consoleInput;
@@ -14,27 +15,30 @@ public class BankInfo
 
     public static void main(String[] args)
     {
-        new BankInfo(args[0],args[1],args[2],args[3]);
+        new BankInfo(args[0], args[1], args[2], args[3]);
     }
 
+    ///Attempt to connect to database if not display error and terminate.
     private BankInfo(String server, String database, String username, String password)
     {
         conns = new Connections();
         consoleInput = new Scanner(System.in);
-        print(String.format("%s/%s?user=%s&password=%s",server,database,username,password));
-        if(conns.connect( server,  database, username, password))
+        print(String.format("%s/%s?user=%s&password=%s", server, database, username, password));
+        if (conns.connect(server, database, username, password))
         {
             while (this.startPage()) ;
             return;
         }
-        print("Failed to connect to server.\nPlease Try Again Later...");
-        consoleInput.next();
+        print("Failed to connect to server.");
+        enterToContinue();
     }
 
+    ///Welcome user to app
+    ///prompt to login or create account
     private boolean startPage()
     {
         clearSpace(20);
-        String  action = validateString("Welcome to Sterling Bank!\nHow can we help you today?\n1: Access account\n2: Make a New Account\n0: Quit",1,10);
+        String action = validateString("Welcome to Sterling Bank!\nHow can we help you today?\n1: Access account\n2: Make a New Account\n0: Quit", 1, 10);
         switch (action)
         {
             case "1":
@@ -53,11 +57,7 @@ public class BankInfo
         return true;
     }
 
-    private static void print(String value)
-    {
-        System.out.println(value);
-    }
-
+    ///Loop login (from startPage()) until user is successfully logged in or prompted to quit
     private boolean login()
     {
         clearSpace(20);
@@ -75,6 +75,7 @@ public class BankInfo
         return consoleInput.next().trim().toLowerCase(Locale.ROOT).charAt(0) == 'y';
     }
 
+    ///looped user menu to prompt them on action
     private boolean userMenu(User user)
     {
         clearSpace(20);
@@ -94,10 +95,11 @@ public class BankInfo
         }
     }
 
+    ///Prints all accounts aside from an optional skip value
     private void printAccounts(Account[] accounts, int skip)
     {
-        String sep="________________________________________________________________________________";
-        print("Available Accounts:\n"+sep);
+        String sep = "________________________________________________________________________________";
+        print("Available Accounts:\n" + sep);
         for (int i = 0; i < accounts.length; i++)
         {
             if (i == skip) continue;
@@ -108,6 +110,8 @@ public class BankInfo
         print("");
     }
 
+    ///Displays all accounts associated with user
+    ///prompts to select and account or to initiate transfers between accounts
     private boolean displayAllAccounts(User user)
     {
         clearSpace(20);
@@ -115,7 +119,7 @@ public class BankInfo
 
         printAccounts(accounts, -1);
 
-        if(accounts.length>0)
+        if (accounts.length > 0)
         {
             String action = validateString("Please select an account\nor input T to transfer between accounts\nor input No to quit", 1, 25).trim().toLowerCase(Locale.ROOT);
             if (!Pattern.compile("\\D").matcher(action).find())
@@ -142,13 +146,15 @@ public class BankInfo
             return true;
         }
         print("No accounts associated with this account");
-                enterToContinue();
+        enterToContinue();
         return false;
     }
 
+    ///transfer money between accounts that belong to user
+    ///prints accounts to select from
     private boolean transfer(Account[] accounts)
     {
-        if(accounts.length<2)
+        if (accounts.length < 2)
         {
             print("Unable to transfer between accounts with less than two accounts associated with user");
             enterToContinue();
@@ -192,6 +198,8 @@ public class BankInfo
         return false;
     }
 
+    ///opens menu associated with an account
+    ///prompts actions to take
     private boolean openAccount(Account account)
     {
         clearSpace(20);
@@ -230,6 +238,8 @@ public class BankInfo
         return userChoice.trim().toLowerCase(Locale.ROOT).charAt(0) != 'n';
     }
 
+    ///Displays associated users
+    ///prompts to add an additional user
     private void addJoint(Account account)
     {
         clearSpace(20);
@@ -262,6 +272,7 @@ public class BankInfo
         }
     }
 
+    ///deposit funds into account
     private void deposit(Account account)
     {
         double value = 0d;
@@ -274,6 +285,7 @@ public class BankInfo
         conns.updateTransaction(account, value);
     }
 
+    ///Remove funds from account
     private void withdraw(Account account)
     {
         double value = 0d;
@@ -287,6 +299,7 @@ public class BankInfo
         conns.updateTransaction(account, -value);
     }
 
+    ///creates anew new account associated with user
     private void openNewBankAccount(User user)
     {
         clearSpace(20);
@@ -299,15 +312,16 @@ public class BankInfo
                 print(String.format("%d: %s", i + 1, accountTypes[i]));
             }
 
-            action = validateInteger("Please choose an Account type.\nPlease input a value between 1 and " + (accountTypes.length), true, true) ;
+            action = validateInteger("Please choose an Account type.\nPlease input a value between 1 and " + (accountTypes.length), true, true);
         } while (action < 1 || action > accountTypes.length);
 
         String accountName = validateString("Please enter an Account name.\nSingle Character will default to Type name.", 1, 20);
         if (accountName.length() == 1)
-            accountName = accountTypes[action-1].substring(0, Math.min(20, accountTypes[action-1].length()));
-        conns.openNewAccount(accountName, action, accountTypes[action-1], user);
+            accountName = accountTypes[action - 1].substring(0, Math.min(20, accountTypes[action - 1].length()));
+        conns.openNewAccount(accountName, action, accountTypes[action - 1], user);
     }
 
+    ///check for valid characters
     public static boolean validCharacters(String comparison)
     {
         return !Pattern.compile("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]$").matcher(comparison).find();
@@ -325,6 +339,7 @@ public class BankInfo
         return Pattern.compile(regex).matcher(comparison).find();
     }
 
+    ///create a new user account
     private boolean makeNewUserAccount()
     {
         clearSpace(20);
@@ -362,6 +377,7 @@ public class BankInfo
         }
     }
 
+    ///confirm integer input
     private int validateInteger(String Prompt, boolean positive, boolean aboveZero)
     {
         while (true)
@@ -380,6 +396,7 @@ public class BankInfo
         }
     }
 
+    ///confirm double input
     private double validateDouble(String Prompt, boolean positive)
     {
         while (true)
@@ -398,6 +415,7 @@ public class BankInfo
         }
     }
 
+    ///confirm valid string
     private String validateString(String Prompt, int minLength, int max)
     {
         boolean check;
@@ -406,7 +424,7 @@ public class BankInfo
         {
             print(Prompt);
             result = consoleInput.next().trim();
-            check = result.toLowerCase(Locale.ROOT).equals("null")|| !validCharacters(result) || result.length() < minLength || result.length() >= max;
+            check = result.toLowerCase(Locale.ROOT).equals("null") || !validCharacters(result) || result.length() < minLength || result.length() >= max;
         } while (check);
         return result;
     }
@@ -418,8 +436,9 @@ public class BankInfo
         {
             System.in.read();
         }
-        catch(Exception e)
-        {}
+        catch (Exception e)
+        {
+        }
     }
 
     private void clearSpace(int lineCount)
@@ -428,5 +447,10 @@ public class BankInfo
         {
             print("");
         }
+    }
+
+    private static void print(String value)
+    {
+        System.out.println(value);
     }
 }
